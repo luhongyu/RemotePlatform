@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>be cool</title>
+
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+	<link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+	<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+	<script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+	<link href="../static/bootstrap/css/star-rating.min.css" media="all" rel="stylesheet" type="text/css"/>
+	<script src="../static/bootstrap/js/star-rating.min.js" type="text/javascript"></script>
+
+	<link href="../static/bootstrap/css/like-heart.css" media="all" rel="stylesheet" type="text/css"/>
+	<!--script src="../static/bootstrap/js/like-heart.js" type="text/javascript"></script-->
+
+	<body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
+
+		<br><br><br>
+		<form name="reg" action="/gender survey" method="post">
+		<div class="container">
+			<input name="student_id" type="hidden" value={{student_id}}>
+			<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title"><b>请选择您认为最满意的推荐列表</b>(点击下方的列表题目可以帮助您回忆列表内容)</h3>
+			</div>
+			<div class="panel-body">
+				<div class="btn-group" data-toggle="buttons">
+					<label class="btn btn-info"><input type="radio" name="options1" value="1"><b>推荐列表1</b></label>
+					<label class="btn btn-info"><input type="radio" name="options1" value="2"><b>推荐列表2</b></label>
+					<label class="btn btn-info"><input type="radio" name="options1" value="3"><b>推荐列表3</b></label>
+					<label class="btn btn-info"><input type="radio" name="options1" value="4"><b>推荐列表4</b></label>
+					<label class="btn btn-info"><input type="radio" name="options1" value="5"><b>推荐列表5</b></label>
+					<label class="btn btn-info"><input type="radio" name="options1" value="6"><b>推荐列表6</b></label>
+					<label class="btn btn-info"><input type="radio" name="options1" value="7"><b>推荐列表7</b></label>
+				</div>
+			</div>
+			</div>
+
+			<div class="panel panel-info">
+			<div class="panel-heading">
+				<h3 class="panel-title"><b>请选择您认为最差劲的推荐列表</b>(点击下方的列表题目可以帮助您回忆列表内容)</h3>
+			</div>
+			<div class="panel-body">
+				<div class="btn-group" data-toggle="buttons">
+					<label class="btn btn-info"><input type="radio" name="options2" value="1"><b>推荐列表1</b></label>
+					<label class="btn btn-info"><input type="radio" name="options2" value="2"><b>推荐列表2</b></label>
+					<label class="btn btn-info"><input type="radio" name="options2" value="3"><b>推荐列表3</b></label>
+					<label class="btn btn-info"><input type="radio" name="options2" value="4"><b>推荐列表4</b></label>
+					<label class="btn btn-info"><input type="radio" name="options2" value="5"><b>推荐列表5</b></label>
+					<label class="btn btn-info"><input type="radio" name="options2" value="6"><b>推荐列表6</b></label>
+					<label class="btn btn-info"><input type="radio" name="options1" value="7"><b>推荐列表7</b></label>
+				</div>
+			</div>
+			</div>
+		</div>
+
+
+		<div class="container">
+			<div class="panel-group" id="accordion">
+				{% for tmplist in match %}
+				<div class="panel panel-info">
+
+					<div class="panel-heading">
+						<a data-toggle="collapse" data-parent="#accordion" href="#list{{tmplist.rec_method}}">
+						<h3 class="panel-title">
+
+								<b>推荐列表{{tmplist.list_id}}</b>
+
+						</h3>
+						</a>
+					</div>
+
+					<div id="list{{tmplist.rec_method}}" class="panel-collapse collapse">
+						<div class="panel-body">
+						{% for each in tmplist.list %}
+							<div class="col-xs-2" id="{{each.itemID}}">
+								<div class="thumbnail" data-toggle="tooltip" data-placement="top" title="{{each.name}}">
+									<a href="{{each.itemUrl}}" target="_blank"><img src="{{each.imgUrl}}"></a>
+									<div class="caption">
+										<p style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{{each.name}}</p>
+										<h5>{{each.sim_value}}</h5>
+									</div>  
+								</div>
+							</div>
+						{% endfor %}
+
+						</div>
+					</div>
+				</div>
+				{% endfor %}
+			</div>
+			<br>
+			<div  style="margin:auto;width:200px">
+				<p><input class="btn btn-primary" type="button" onclick="check()" style="width:200px" value="下一步"></p>
+			</div>
+			<br><br><br>
+		</div>
+
+	</form>
+	<style>
+		.right{float:right; text-align:right;}
+		.col-center-block {
+			float: none;
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		}
+	</style>
+	<script>
+		$(function () { $("[data-toggle='tooltip']").tooltip(); });
+		function check(){
+        	if(!reg.options1[0].checked && !reg.options1[1].checked && !reg.options1[2].checked
+        	&& !reg.options1[3].checked && !reg.options1[4].checked && !reg.options1[5].checked
+        	&& !reg.options1[6].checked){
+        		alert("请选择您认为最满意的推荐列表");
+        	}
+        	else if(!reg.options2[0].checked && !reg.options2[1].checked && !reg.options2[2].checked
+        	     && !reg.options2[3].checked && !reg.options2[4].checked && !reg.options2[5].checked
+        	     && !reg.options1[6].checked){
+        		alert("请选择您认为最差劲的推荐列表");
+        	}
+        	else reg.submit()
+
+        }
+	</script>
+	</body>
+</html>
+		

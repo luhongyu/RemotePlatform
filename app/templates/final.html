@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>be cool</title>
+
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+	<link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+	<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+	<script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+	<link href="../static/bootstrap/css/star-rating.min.css" media="all" rel="stylesheet" type="text/css"/>
+	<script src="../static/bootstrap/js/star-rating.min.js" type="text/javascript"></script>
+
+	<body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
+		<br><br><br>
+
+		<div class="container">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title"><b>感谢您的支持与配合！</b></h3>
+				</div>
+				<div class="panel-body">
+					<div  style="margin:auto;width:200px">
+					<img src="{{image.url}}" alt="Responsive image" class="img-thumbnail">
+					</div>
+				</div>
+			</div>
+			<!--form action="/finish" method="post">
+			<div  style="margin:auto;width:200px">
+				<p><input class="btn btn-primary" type="submit" style="width:200px" value="更换表情"></p>
+			</div>
+			</form-->
+		</div>
+
+
+	<style>
+		.col-center-block {
+			float: none;
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		.right{float:right; text-align:right;}
+	</style>
+	<script>
+		$(function () { $("[data-toggle='tooltip']").tooltip(); });
+		function searching(){
+			var child = document.getElementById("desc");
+			var parent = child.parentNode;
+			var new_pro = document.createElement("progress");
+			if(parent){
+				parent.replaceChild(new_pro,child);
+				document.myform.submit();
+			}
+		};
+
+	</script>
+	</body>
+</html>
+

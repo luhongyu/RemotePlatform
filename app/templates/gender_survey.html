@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>be cool</title>
+
+	<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
+	<link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
+	<script src="http://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+	<script src="http://libs.baidu.com/bootstrap/3.0.3/js/bootstrap.min.js"></script>
+	<link href="../static/bootstrap/css/star-rating.min.css" media="all" rel="stylesheet" type="text/css"/>
+	<script src="../static/bootstrap/js/star-rating.min.js" type="text/javascript"></script>
+
+	<body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
+		<br><br><br>
+		<form name="reg" action="/finish" method="post">
+			<input name="student_id" type="hidden" value={{student_id}}>
+		<div class="container">
+			<div class="panel panel-primary">
+				<div class="panel-heading">
+					<h3 class="panel-title"><b>请您回答相关问题并完成此次调查</b></h3>
+				</div>
+			</div>
+			<div class="panel panel-info">
+				<div class="panel-heading">
+					<h3 class="panel-title"><b>请选择您的性别</b></h3>
+				</div>
+				<div class="panel-body">
+					<div class="btn-group" data-toggle="buttons">
+						<label class="btn btn-info"><input type="radio" name="options1" value="boy"> <b>男生</b></label>
+						<label class="btn btn-info"><input type="radio" name="options1" value="girl"> <b>女生</b></label>
+					</div>
+				</div>
+			</div>
+			<div class="panel panel-info">
+				<div class="panel-heading">
+					<h3 class="panel-title"><b>请问您每周花在购物网站上的时间约为多少？</b></h3>
+				</div>
+				<div class="panel-body">
+					<div class="btn-group" data-toggle="buttons">
+						<label class="btn btn-info"><input type="radio" name="options2" value="1"> <b><1小时</b></label>
+						<label class="btn btn-info"><input type="radio" name="options2" value="2"> <b>1小时~5小时</b></label>
+						<label class="btn btn-info"><input type="radio" name="options2" value="3"> <b>5小时~10小时</b></label>
+						<label class="btn btn-info"><input type="radio" name="options2" value="4"> <b>>10小时 </b></label>
+					</div>
+				</div>
+			</div>
+
+			<!--div class="panel panel-info">
+				<div class="panel-heading">
+					<h3 class="panel-title">
+						<b>在实验过程中，您的购物目标是否发生了改变？请选择改变后的购物目的</b><br>
+
+					</h3>
+				</div>
+				<div class="panel-body">
+
+						<div><label><input type="radio" name="options3" value="1" onclick="document.getElementById('reason').disabled = true">
+							给自己选，有明确的目标
+						</label></div>
+						<div><label><input type= "radio" name="options3" value="2" onclick="document.getElementById('reason').disabled = true">
+							给自己选，没有明确的目标
+						</label></div>
+						<div><label><input type="radio" name="options3" value="3" onclick="document.getElementById('reason').disabled = true">
+							给家人/朋友选，有明确的目标
+						</label></div>
+						<div><label><input type="radio" name="options3" value="4" onclick="document.getElementById('reason').disabled = true">
+							给家人/朋友选，没有明确的目标
+						</label></div>
+						<div><label><input type="radio" name="options3" value="5" onclick="document.getElementById('reason').disabled = false">
+							其他(请您自己描述)
+						</label></div>
+
+					<p><textarea class="form-control" rows="1" id="reason" name="text_square" style="width:300px" disabled="disabled"></textarea></p>
+				</div>
+			</div-->
+
+
+			<div  style="margin:auto;width:200px">
+				<p><input class="btn btn-primary" type="button" onclick="check()" style="width:200px" value="完成"></p>
+			</div>
+
+		</div>
+		</form>
+
+	<style>
+		.col-center-block {
+			float: none;
+			display: block;
+			margin-left: auto;
+			margin-right: auto;
+		}
+		.right{float:right; text-align:right;}
+	</style>
+	<script>
+		$(function () { $("[data-toggle='tooltip']").tooltip(); });
+		function check(){
+        	if(!reg.options1[0].checked && !reg.options1[1].checked ){
+        		alert("请选择您的性别");
+        	}
+        	else if(!reg.options2[0].checked && !reg.options2[1].checked
+        	     && !reg.options2[2].checked && !reg.options2[3].checked ){
+        		alert("请选择您每周的购物时间");
+        	}
+        	else reg.submit()
+        }
+	</script>
+	</body>
+</html>
+

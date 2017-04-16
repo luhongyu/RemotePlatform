@@ -1,0 +1,18 @@
+.container-50{
+    width: 50%;
+    margin:auto;
+}
+.title{
+    text-align: center;
+}
+.text-align-center: {
+    text-align: center;   
+}
+.submit{
+    margin-top: 5px;
+    text-align: center;
+    width: 100%;
+}
+.submit > .btn{
+    width: 40%;
+}
