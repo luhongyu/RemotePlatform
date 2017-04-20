@@ -13,7 +13,7 @@
 
 	<body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
 		<br><br><br>
-		<form name="reg" action="/welcome" method="post">
+		<form name="reg" action="/cam_cal" method="post">
 		<div class="container">
 			<div class="panel panel-primary">
 				<div class="panel-heading">
@@ -92,7 +92,9 @@
         	else if(reg.options3[4].checked && reg.desc.value == '' ){
         		alert("请用一句话描述您设想的购物场景");
         	}
-        	else reg.submit()
+        	else{
+                reg.submit()
+            }
         }
 	</script>
 	</body>
