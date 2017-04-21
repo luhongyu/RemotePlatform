@@ -2,8 +2,6 @@
 <html>
 <head>
     <title>Face detection</title>
-
-    <!-- Bootstrap core CSS -->
     <link rel="stylesheet" href="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/css/bootstrap.min.css">
     <script src="http://cdn.static.runoob.com/libs/jquery/2.1.1/jquery.min.js"></script>
     <script src="http://cdn.static.runoob.com/libs/bootstrap/3.3.7/js/bootstrap.min.js"></script>
@@ -11,7 +9,7 @@
 </head>
 <body>
 <form name="reg" action="/gaze_cal" method="post">
-    <input name="student_id" type="hidden" value={{student_id}}>
+    <input name="student_id" type="hidden" value={{ student_id }}>
 </form>
 <canvas id="myCanvas"></canvas>
 <div align="center" class="wrapper">
@@ -89,7 +87,7 @@
         };
 
     };
-    function post2next(){
+    function post2next() {
         reg.submit()
     }
 </script>

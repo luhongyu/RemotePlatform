@@ -3,6 +3,7 @@ from flask import Flask, Blueprint
 
 
 app = Flask(__name__)
+
 #app.url_map.default_subdomain = 'www'
 #app.config['SERVER_NAME'] = 'guochengtsinghua.com'
 

@@ -5,6 +5,7 @@ from app import app
 from flask.helpers import send_from_directory
 
 from algorithm import *
+import json
 
 
 def __init_log(student_id):
@@ -29,9 +30,10 @@ def log_gaze(student_id, nowpage, np_param, lastpage, gazedata):
     """
         initialize log for nowpage, fill gaze data into lastpage's log
     """
+    print gazedata
     if lastpage:
         assert lastpage in Log[student_id]['Gaze']
-        Log[student_id]['Gaze'][lastpage]['gazelist'] = gazedata
+        Log[student_id]['Gaze'][lastpage]['gazedata'] = json.loads(gazedata)
 
     if nowpage:
         Log[student_id]['Gaze'][nowpage] = {"param": np_param, "gazedata": {}}
@@ -42,7 +44,7 @@ def origin():
     """
     登录页面(origin) -> 眼动校准页面（cam_cal）
     """
-    return render_template('start_page.html')
+    return render_template('01_start_page.html')
 
 
 @app.route('/cam_cal', methods=['POST'])
@@ -60,7 +62,7 @@ def cam_cal():
 
     # -------------- cam_calibration --------------- #
     log_time(student_id)  # 1
-    return render_template('cam_calibration.html', student_id=student_id)
+    return render_template('02_cam_calibration.html', student_id=student_id)
 
 
 @app.route('/gaze_cal', methods=['POST'])
@@ -70,9 +72,10 @@ def gaze_cal():
     """
     student_id = request.form['student_id']
     log_time(student_id)  # 2
-    return render_template('gaze_calibration.html', student_id=student_id)
+    return render_template('03_gaze_calibration.html', student_id=student_id)
 
 
+# -------------------------- 采集眼动信息 --------------------------- #
 @app.route('/welcome', methods=['POST'])
 def user_rating():
     """
@@ -99,7 +102,7 @@ def user_rating():
             tmp_list = []
 
     log_gaze(student_id, "user_rating_1", {"match": match, "student_id": student_id}, None, None)
-    return render_template('user_rating_1.html', match=match, student_id=student_id)
+    return render_template('04_user_rating_1.html', basehtml="GAZE_MODULE.html", match=match, student_id=student_id)
 
 
 @app.route('/second rating', methods=['POST'])
@@ -133,7 +136,7 @@ def second_rating():
 
     log_gaze(student_id, "user_rating_2", {"match": match, "student_id": student_id}, "user_rating_1",
              request.form['gazedata'])
-    return render_template('user_rating_2.html', match=match, student_id=student_id)
+    return render_template('05_user_rating_2.html', basehtml="GAZE_MODULE.html", match=match, student_id=student_id)
 
 
 @app.route('/list rating', methods=['POST'])
@@ -176,7 +179,8 @@ def list_rating():
              "user_rating_2",
              request.form['gazedata'])
 
-    return render_template('recommendations.html', match=Log[student_id]['match'], student_id=student_id)
+    return render_template('06_recommendations.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['match'],
+                           student_id=student_id)
 
 
 @app.route('/list diversity', methods=['POST'])
@@ -197,7 +201,8 @@ def list_diversity():
 
     log_gaze(student_id, "diversity", {"match": Log[student_id]['match'], "student_id": student_id}, "recommendations",
              request.form['gazedata'])
-    return render_template('diversity.html', match=Log[student_id]['match'], student_id=student_id)
+    return render_template('07_diversity.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['match'],
+                           student_id=student_id)
 
 
 @app.route('/user click', methods=['POST'])
@@ -219,9 +224,11 @@ def user_click():
     log_gaze(student_id, "user_click", {"match": Log[student_id]['match'], "student_id": student_id}, "diversity",
              request.form['gazedata'])
 
-    return render_template('user_click.html', match=Log[student_id]['match'], student_id=student_id)
+    return render_template('08_user_click.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['match'],
+                           student_id=student_id)
 
 
+# -------------------------------- 停止采集 ------------------------------ #
 @app.route('/like dislike', methods=['POST'])
 def list_select():
     student_id = request.form['student_id']
@@ -234,7 +241,7 @@ def list_select():
 
     log_gaze(student_id, None, None, "user_click", request.form['gazedata'])
 
-    return render_template('list_select.html', match=Log[student_id]['match'], student_id=student_id)
+    return render_template('09_list_select.html', match=Log[student_id]['match'], student_id=student_id)
 
 
 @app.route('/gender survey', methods=['POST'])
@@ -246,7 +253,7 @@ def gender_survey():
     Log[student_id]['Mostdiverse'] = request.form['options1']
     Log[student_id]['Leastdiverse'] = request.form['options2']
     print Log[student_id]['Mostdiverse'], Log[student_id]['Leastdiverse']
-    return render_template('gender_survey.html', student_id=student_id)
+    return render_template('10_gender_survey.html', student_id=student_id)
 
 
 @app.route('/finish', methods=['POST'])
@@ -264,5 +271,30 @@ def final():
         del Log[student_id]
     except:
         pass
-    return render_template('final.html', image={
+    return render_template('11_final.html', image={
         "url": "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=586527107,661330562&fm=23&gp=0.jpg"})
+
+
+@app.route("/show_gaze", methods=['POST', 'GET'])
+def show_gaze():
+    return render_template("12_show_gaze.html")
+
+
+@app.route("/show_gaze_page", methods=['POST', 'GET'])
+def show_gaze_page():
+    student_id = request.form['student_id']
+    print student_id
+
+    tlog = log_data.find({"studentID": student_id})
+    if tlog:
+        tlog = tlog[0]
+    else:
+        print "error! can't find studentID"
+
+    param = tlog['Gaze']['user_rating_1']['param']
+
+    print tlog['Gaze']['user_rating_1']['gazedata']
+    gazelist = [{"x": t['px'], "y": t['py'], "value": 1} for t in tlog['Gaze']['user_rating_1']['gazedata']['gazelist']]
+
+    return render_template("gaze/user_rating_1.html", gazelist=gazelist, match=param['match'],
+                           student_id=param['student_id'])
