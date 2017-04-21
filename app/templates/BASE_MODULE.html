@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    {% block head %}
+        <script>$(function () {
+            $("[data-toggle='tooltip']").tooltip();
+        });</script>
+    {% endblock %}
+    {% block style %}
+        <style>.col-center-block {
+            float: none;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .right {
+            float: right;
+            text-align: right;
+        }</style>
+    {% endblock %}
+</head>
+
+<body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
+<br><br><br>
+<div id="loggaze" style="padding-left: 0px; padding-right: 0px">
+    {% block body %}
+    {% endblock %}
+</div>
+</body>
+</html>

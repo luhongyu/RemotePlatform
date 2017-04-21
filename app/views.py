@@ -7,6 +7,8 @@ from flask.helpers import send_from_directory
 from algorithm import *
 import json
 
+DEBUG = False
+
 
 def __init_log(student_id):
     """
@@ -44,6 +46,8 @@ def origin():
     """
     登录页面(origin) -> 眼动校准页面（cam_cal）
     """
+    if DEBUG:
+        return render_template("00_start_page.html")
     return render_template('01_start_page.html')
 
 
@@ -54,13 +58,16 @@ def cam_cal():
     """
     # -------------- start_page --------------- #
 
-    student_id = request.form['text_square']
+    student_id = request.form['student_id']
     __init_log(student_id)
 
-    Log[student_id]['shopping_intent'] = request.form['options3']
-    Log[student_id]['description'] = request.form['text_square']
+    print request.form
+    Log[student_id]['shopping_intent'] = request.form['shopping_intent']
+    if Log[student_id]['shopping_intent'] == "4":
+        Log[student_id]['reason'] = request.form['reason']
+    else:
+        Log[student_id]['reason'] = ""
 
-    # -------------- cam_calibration --------------- #
     log_time(student_id)  # 1
     return render_template('02_cam_calibration.html', student_id=student_id)
 
@@ -82,6 +89,8 @@ def user_rating():
     眼动校准页面（gaze_cal）-> *商品评分页面1 -> 商品评分收集页面2
     """
     student_id = request.form['student_id']
+    if DEBUG:
+        __init_log(student_id)
     log_time(student_id)  # 3
 
     Log[student_id]['user_rating_list'] = {}
@@ -283,7 +292,8 @@ def show_gaze():
 @app.route("/show_gaze_page", methods=['POST', 'GET'])
 def show_gaze_page():
     student_id = request.form['student_id']
-    print student_id
+    page = request.form['page']
+    print student_id, page
 
     tlog = log_data.find({"studentID": student_id})
     if tlog:
@@ -291,10 +301,19 @@ def show_gaze_page():
     else:
         print "error! can't find studentID"
 
-    param = tlog['Gaze']['user_rating_1']['param']
+    param = tlog['Gaze'][page]['param']
+    gaze_data = tlog['Gaze'][page]['gazedata']
 
-    print tlog['Gaze']['user_rating_1']['gazedata']
-    gazelist = [{"x": t['px'], "y": t['py'], "value": 1} for t in tlog['Gaze']['user_rating_1']['gazedata']['gazelist']]
+    offset_top = gaze_data['pagesize']['offsetTop']
+    offset_left = gaze_data['pagesize']['offsetLeft']
+    gaze_list = [{"x": t['px'] - offset_left, "y": t['py'] - offset_top, "value": 1} for t in gaze_data['gazelist']]
 
-    return render_template("gaze/user_rating_1.html", gazelist=gazelist, match=param['match'],
+    page_dic = {
+        'user_rating_1': "04_user_rating_1.html",
+        'user_rating_2': "05_user_rating_2.html",
+        'recommendations': "06_recommendations.html",
+        'diversity': "07_diversity.html",
+        'user_click': "08_user_click.html"
+    }
+    return render_template(page_dic[page], basehtml="HEATMAP_MODULE.html", gazelist=gaze_list, match=param['match'],
                            student_id=param['student_id'])

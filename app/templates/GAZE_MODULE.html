@@ -2,10 +2,6 @@
 <html>
 <head>
     {% block head %}
-        <script src="../static/js/searchgazer.js" type="text/javascript"></script>
-        <script>$(function () {
-            $("[data-toggle='tooltip']").tooltip();
-        });</script>
     {% endblock %}
     {% block style %}
         <style>.col-center-block {
@@ -21,11 +17,17 @@
         }</style>
     {% endblock %}
 </head>
-
 <body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
+<script src="../static/js/searchgazer.js" type="text/javascript"></script>
+<script>$(function () {
+    $("[data-toggle='tooltip']").tooltip();
+});</script>
+
 <br><br><br>
-{% block body %}
-{% endblock %}
+<div id="loggaze" style="padding-left: 0px; padding-right: 0px">
+    {% block body %}
+    {% endblock %}
+</div>
 <script>
     var gaze_list = [];
     window.onload = function () {
@@ -39,10 +41,10 @@
                         var py = data.y + $(window).scrollTop();
                         gaze_list.push({"px": px, "py": py, "time": parseInt(clock)});
                     }
-
                 })
                 .begin()
-                .showPredictionPoints(true);
+                .showPredictionPoints(false);
+
         var width = 320;
         var height = 240;
         var topDist = '0px';
@@ -74,6 +76,7 @@
     window.onbeforeunload = function () {
         webgazer.end();
     };
+
     function bound(data) {
         if (data.x < 0)
             data.x = 0;
@@ -88,7 +91,17 @@
         return data;
     }
     function post2back() {
-        var gazedata = {"pagesize": {"x": $(document).width(), "y": $(document).height()}, "gazelist": gaze_list};
+        var gazedata;
+        var loggaze = $("#loggaze");
+        gazedata = {
+            "pagesize": {
+                "x": loggaze.width(),
+                "y": loggaze.height(),
+                "offsetTop": loggaze.offset().top,
+                "offsetLeft": loggaze.offset().left
+            },
+            "gazelist": gaze_list
+        };
         document.getElementById("gdinput").value = JSON.stringify(gazedata);
         $("#logdata").submit();
     }

@@ -14,7 +14,7 @@
 </head>
 <body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
 <br><br><br>
-<form name="reg" action="/cam_cal" method="post">
+<form name="reg" action="/welcome" method="post">
     <div class="container">
         <div class="panel panel-primary">
             <div class="panel-heading">
@@ -33,7 +33,7 @@
                 <h3 class="panel-title"><b>首先请填写您的学号</b></h3>
             </div>
             <div class="panel-body" align="center">
-                <p><input type="text" maxLength="10" name="student_id" placeholder="Student ID here..." /></p>
+                <p><input type="text" maxLength="10" name="student_id" value="0" placeholder="Student ID here..." /></p>
             </div>
         </div>
 
@@ -44,27 +44,27 @@
                 </h3>
             </div>
             <div class="panel-body">
-                <div><label><input type="radio" name="shopping_intent" value="1"
-                                   onclick="document.getElementById('desc').disabled = true">
+                <div><label><input type="radio" name="shopping_intent" value="1" checked="checked"
+                                   onclick="document.getElementById('reason').disabled = true">
                     给自己选，有明确的目标
                 </label></div>
                 <div><label><input type="radio" name="shopping_intent" value="2"
-                                   onclick="document.getElementById('desc').disabled = true">
+                                   onclick="document.getElementById('reason').disabled = true">
                     给自己选，没有明确的目标
                 </label></div>
                 <div><label><input type="radio" name="shopping_intent" value="3"
-                                   onclick="document.getElementById('desc').disabled = true">
+                                   onclick="document.getElementById('reason').disabled = true">
                     给家人/朋友选，有明确的目标
                 </label></div>
                 <div><label><input type="radio" name="shopping_intent" value="4"
-                                   onclick="document.getElementById('desc').disabled = true">
+                                   onclick="document.getElementById('reason').disabled = true">
                     给家人/朋友选，没有明确的目标
                 </label></div>
                 <div><label><input type="radio" name="shopping_intent" value="5"
-                                   onclick="document.getElementById('desc').disabled = false">
+                                   onclick="document.getElementById('reason').disabled = false">
                     其他(请您自己描述)
                 </label></div>
-                <p><textarea class="form-control" rows="1" id="desc" name="reason" style="width:300px"
+                <p><textarea class="form-control" rows="1" id="des" name="reason" style="width:300px"
                                                               disabled="disabled" title=""></textarea></p>
             </div>
         </div>
