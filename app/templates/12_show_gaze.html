@@ -11,12 +11,12 @@
 <br><br><br>
 <div class="container" align="center">
     <form action="show_gaze_page" method="post">
-        <div class="panel panel-info">
+        <div class="panel panel-info" style="width: 300px">
             <div class="panel-heading">
                 <h3 class="panel-title"><b>输入查看的学号</b></h3>
             </div>
             <div class="panel-body" align="center">
-                <p><input type="text" maxLength="10" name="student_id" value="0" placeholder="Student ID here..." /></p>
+                <p><input type="text" maxLength="10" name="student_id" placeholder="Student ID here..."/></p>
             </div>
         </div>
 
@@ -26,23 +26,23 @@
                     <b>选择查看的页面</b><br>
                 </h3>
             </div>
-        <div class="panel-body" align="left">
-            <div><label><input type="radio" name="page" value="user_rating_1">
-                采集用户偏好页面-1
-            </label></div>
-            <div><label><input type="radio" name="page" value="user_rating_2">
-                采集用户偏好页面-2
-            </label></div>
-            <div><label><input type="radio" name="page" value="recommendations">
-                推荐列表评分页面
-            </label></div>
-            <div><label><input type="radio" name="page" value="diversity">
-                推荐列表多样性评分页面
-            </label></div>
-            <div><label><input type="radio" name="page" value="user_click">
-                用户商品喜好采集页面
-            </label></div>
-        </div>
+            <div class="panel-body" align="left">
+                <div><label><input type="radio" name="page" value="user_rating_1">
+                    采集用户偏好页面-1
+                </label></div>
+                <div><label><input type="radio" name="page" value="user_rating_2">
+                    采集用户偏好页面-2
+                </label></div>
+                <div><label><input type="radio" name="page" value="recommendations">
+                    推荐列表评分页面
+                </label></div>
+                <div><label><input type="radio" name="page" value="diversity">
+                    推荐列表多样性评分页面
+                </label></div>
+                <div><label><input type="radio" name="page" value="user_click">
+                    用户商品喜好采集页面
+                </label></div>
+            </div>
         </div>
         <p><input class="btn btn-primary" type="submit" style="width:200px" value="查看"></p>
     </form>

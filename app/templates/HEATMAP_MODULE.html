@@ -2,6 +2,10 @@
 <html>
 <head>
     {% block head %}
+        <script src="../static/js/heatmap.js" type="text/javascript"></script>
+        <script>$(function () {
+            $("[data-toggle='tooltip']").tooltip();
+        });</script>
     {% endblock %}
     {% block style %}
         <style>.col-center-block {
@@ -17,10 +21,6 @@
         }</style>
     {% endblock %}
 </head>
-<script src="../static/js/heatmap.js" type="text/javascript"></script>
-<script>$(function () {
-$("[data-toggle='tooltip']").tooltip();
-});</script>
 
 <body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
 <br><br><br>
@@ -29,7 +29,7 @@ $("[data-toggle='tooltip']").tooltip();
     {% endblock %}
 </div>
 <script>
-    $(window).ready(function() {
+    window.onload = function () {
         var gaze_data = {{ gazelist|safe|escape }};
         var hm = $("#heatmap");
 
@@ -44,7 +44,7 @@ $("[data-toggle='tooltip']").tooltip();
             data: gaze_data
         };
         heatmapInstance.setData(data);
-    });
+    }
 </script>
 </body>
 </html>

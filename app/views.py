@@ -1,13 +1,13 @@
 # coding=utf-8
 import time
-from flask import render_template, request, redirect
+from flask import render_template, request
 from app import app
-from flask.helpers import send_from_directory
 
 from algorithm import *
 import json
 
 DEBUG = False
+Log = {}
 
 
 def __init_log(student_id):
@@ -16,7 +16,7 @@ def __init_log(student_id):
     """
     Log[student_id] = {}
     Log[student_id]['studentID'] = student_id
-    Log[student_id]['timestamp'] = []
+    Log[student_id]['timestamps'] = []
     Log[student_id]['Gaze'] = {}
 
 
@@ -24,15 +24,14 @@ def log_time(student_id):
     """
         log current_time to student_id
     """
-    tmpTime = time.strftime(timeFormat, time.localtime())
-    Log[student_id]['timestamp'].append(tmpTime)
+    tmpTime = time.strftime('%Y-%m-%d %X', time.localtime())
+    Log[student_id]['timestamps'].append(tmpTime)
 
 
 def log_gaze(student_id, nowpage, np_param, lastpage, gazedata):
     """
         initialize log for nowpage, fill gaze data into lastpage's log
     """
-    print gazedata
     if lastpage:
         assert lastpage in Log[student_id]['Gaze']
         Log[student_id]['Gaze'][lastpage]['gazedata'] = json.loads(gazedata)
@@ -61,12 +60,12 @@ def cam_cal():
     student_id = request.form['student_id']
     __init_log(student_id)
 
-    print request.form
-    Log[student_id]['shopping_intent'] = request.form['shopping_intent']
-    if Log[student_id]['shopping_intent'] == "4":
-        Log[student_id]['reason'] = request.form['reason']
+    Log[student_id]['user_info'] = {}
+    Log[student_id]['user_info']['shopping_intent'] = request.form['shopping_intent']
+    if Log[student_id]['user_info']['shopping_intent'] == "4":
+        Log[student_id]['user_info']['reason'] = request.form['reason']
     else:
-        Log[student_id]['reason'] = ""
+        Log[student_id]['user_info']['reason'] = ""
 
     log_time(student_id)  # 1
     return render_template('02_cam_calibration.html', student_id=student_id)
@@ -93,22 +92,11 @@ def user_rating():
         __init_log(student_id)
     log_time(student_id)  # 3
 
-    Log[student_id]['user_rating_list'] = {}
+    Log[student_id]['Temp_ids'] = random.sample(id_list, 20)
+    Log[student_id]['user_rating_list'] = dict([(tid, 0) for tid in Log[student_id]['Temp_ids']])
 
-    match = []
-    tmp_list = []
-    random.shuffle(id_list)
-    keynum = 0
-    for id in id_list:
-        keynum += 1
-        if keynum > 10:
-            break
-        tmp_list.append(products.find_one({'itemID': id}))
-        Log[student_id]['user_rating_list'][id] = 0
-        if keynum % 5 == 0:
-            random.shuffle(tmp_list)
-            match.append(tmp_list)
-            tmp_list = []
+    match = [[products.find_one({'itemID': tid}) for tid in Log[student_id]['Temp_ids'][:5]],
+             [products.find_one({'itemID': tid}) for tid in Log[student_id]['Temp_ids'][5:10]]]
 
     log_gaze(student_id, "user_rating_1", {"match": match, "student_id": student_id}, None, None)
     return render_template('04_user_rating_1.html', basehtml="GAZE_MODULE.html", match=match, student_id=student_id)
@@ -128,20 +116,11 @@ def second_rating():
             Log[student_id]['user_rating_list'][item_id] = int(r)
         except:
             pass
-    match = []
-    tmp_list = []
-    random.shuffle(id_list)
-    keynum = 0
-    for id in id_list:
-        keynum += 1
-        if keynum > 10:
-            break
-        tmp_list.append(products.find_one({'itemID': id}))
-        Log[student_id]['user_rating_list'][id] = 0
-        if keynum % 5 == 0:
-            random.shuffle(tmp_list)
-            match.append(tmp_list)
-            tmp_list = []
+
+    match = [[products.find_one({'itemID': tid}) for tid in Log[student_id]['Temp_ids'][10:15]],
+             [products.find_one({'itemID': tid}) for tid in Log[student_id]['Temp_ids'][15:20]]]
+
+    del Log[student_id]['Temp_ids']
 
     log_gaze(student_id, "user_rating_2", {"match": match, "student_id": student_id}, "user_rating_1",
              request.form['gazedata'])
@@ -164,31 +143,32 @@ def list_rating():
         except:
             pass
 
-    Log[student_id]['match'] = []
-    Log[student_id]['BPRMF'] = BPRMF(Log[student_id]['user_rating_list'])
-    Log[student_id]['UserKNN'] = UserKNN(Log[student_id]['user_rating_list'])
-    Log[student_id]['ItemKNN'] = ItemKNN(Log[student_id]['user_rating_list'])
-    Log[student_id]['AdaBPR'] = AdaBPR(Log[student_id]['user_rating_list'])
-    Log[student_id]['Borda'] = Borda(Log[student_id]['user_rating_list'])
-    Log[student_id]['Random'] = Random()
-    Log[student_id]['ItemKNN_pro'] = ItemKNN_pro(Log[student_id]['ItemKNN'], Log[student_id]['AdaBPR'])
-    Log[student_id]['match'].append({'rec_method': 'BPRMF', 'list': Log[student_id]['BPRMF']})
-    Log[student_id]['match'].append({'rec_method': 'UserKNN', 'list': Log[student_id]['UserKNN']})
-    Log[student_id]['match'].append({'rec_method': 'ItemKNN', 'list': Log[student_id]['ItemKNN']})
-    Log[student_id]['match'].append({'rec_method': 'AdaBPR', 'list': Log[student_id]['AdaBPR']})
-    Log[student_id]['match'].append({'rec_method': 'Borda', 'list': Log[student_id]['Borda']})
-    Log[student_id]['match'].append({'rec_method': 'Random', 'list': Log[student_id]['Random']})
-    Log[student_id]['match'].append({'rec_method': 'ItemKNN_pro', 'list': Log[student_id]['ItemKNN_pro']})
-    random.shuffle(Log[student_id]['match'])
+    Log[student_id]['BPRMF'] = {"items": BPRMF(Log[student_id]['user_rating_list'])}
+    Log[student_id]['UserKNN'] = {"items": UserKNN(Log[student_id]['user_rating_list'])}
+    Log[student_id]['ItemKNN'] = {"items": ItemKNN(Log[student_id]['user_rating_list'])}
+    Log[student_id]['AdaBPR'] = {"items": AdaBPR(Log[student_id]['user_rating_list'])}
+    Log[student_id]['Borda'] = {"items": Borda(Log[student_id]['user_rating_list'])}
+    Log[student_id]['Random'] = {"items": Random()}
+    Log[student_id]['ItemKNN_pro'] = {"items": ItemKNN_pro(Log[student_id]['ItemKNN'], Log[student_id]['AdaBPR'])}
+
+    Log[student_id]['rec_lists'] = [
+        {'rec_method': 'BPRMF', 'list': Log[student_id]['BPRMF']['items']},
+        {'rec_method': 'UserKNN', 'list': Log[student_id]['UserKNN']['items']},
+        {'rec_method': 'ItemKNN', 'list': Log[student_id]['ItemKNN']['items']},
+        {'rec_method': 'AdaBPR', 'list': Log[student_id]['AdaBPR']['items']},
+        {'rec_method': 'Borda', 'list': Log[student_id]['Borda']['items']},
+        {'rec_method': 'Random', 'list': Log[student_id]['Random']['items']},
+        {'rec_method': 'ItemKNN_pro', 'list': Log[student_id]['ItemKNN_pro']['items']}
+    ]
+    random.shuffle(Log[student_id]['rec_lists'])
 
     for i in range(7):
-        Log[student_id]['match'][i]['list_id'] = i + 1
+        Log[student_id]['rec_lists'][i]['list_id'] = i + 1
 
-    log_gaze(student_id, "recommendations", {"match": Log[student_id]['match'], "student_id": student_id},
-             "user_rating_2",
-             request.form['gazedata'])
+    log_gaze(student_id, "recommendations", {"match": Log[student_id]['rec_lists'], "student_id": student_id},
+             "user_rating_2", request.form['gazedata'])
 
-    return render_template('06_recommendations.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['match'],
+    return render_template('06_recommendations.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['rec_lists'],
                            student_id=student_id)
 
 
@@ -200,17 +180,18 @@ def list_diversity():
     student_id = request.form['student_id']
     log_time(student_id)  # 6
 
-    Log[student_id]['BPRMF_rating'] = request.form['BPRMF']
-    Log[student_id]['UserKNN_rating'] = request.form['UserKNN']
-    Log[student_id]['ItemKNN_rating'] = request.form['ItemKNN']
-    Log[student_id]['AdaBPR_rating'] = request.form['AdaBPR']
-    Log[student_id]['Borda_rating'] = request.form['Borda']
-    Log[student_id]['Random_rating'] = request.form['Random']
-    Log[student_id]['ItemKNN_pro_rating'] = request.form['ItemKNN_pro']
+    Log[student_id]['BPRMF']['rating'] = request.form['BPRMF']
+    Log[student_id]['UserKNN']['rating'] = request.form['UserKNN']
+    Log[student_id]['ItemKNN']['rating'] = request.form['ItemKNN']
+    Log[student_id]['AdaBPR']['rating'] = request.form['AdaBPR']
+    Log[student_id]['Borda']['rating'] = request.form['Borda']
+    Log[student_id]['Random']['rating'] = request.form['Random']
+    Log[student_id]['ItemKNN_pro']['rating'] = request.form['ItemKNN_pro']
 
-    log_gaze(student_id, "diversity", {"match": Log[student_id]['match'], "student_id": student_id}, "recommendations",
+    log_gaze(student_id, "diversity", {"match": Log[student_id]['rec_lists'], "student_id": student_id},
+             "recommendations",
              request.form['gazedata'])
-    return render_template('07_diversity.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['match'],
+    return render_template('07_diversity.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['rec_lists'],
                            student_id=student_id)
 
 
@@ -222,18 +203,18 @@ def user_click():
     student_id = request.form['student_id']
     log_time(student_id)  # 7
 
-    Log[student_id]['BPRMF_diversity'] = request.form['BPRMF']
-    Log[student_id]['UserKNN_diversity'] = request.form['UserKNN']
-    Log[student_id]['ItemKNN_diversity'] = request.form['ItemKNN']
-    Log[student_id]['AdaBPR_diversity'] = request.form['AdaBPR']
-    Log[student_id]['Borda_diversity'] = request.form['Borda']
-    Log[student_id]['Random_diversity'] = request.form['Random']
-    Log[student_id]['ItemKNN_pro_diversity'] = request.form['ItemKNN_pro']
+    Log[student_id]['BPRMF']['diversity'] = request.form['BPRMF']
+    Log[student_id]['UserKNN']['diversity'] = request.form['UserKNN']
+    Log[student_id]['ItemKNN']['diversity'] = request.form['ItemKNN']
+    Log[student_id]['AdaBPR']['diversity'] = request.form['AdaBPR']
+    Log[student_id]['Borda']['diversity'] = request.form['Borda']
+    Log[student_id]['Random']['diversity'] = request.form['Random']
+    Log[student_id]['ItemKNN_pro']['diversity'] = request.form['ItemKNN_pro']
 
-    log_gaze(student_id, "user_click", {"match": Log[student_id]['match'], "student_id": student_id}, "diversity",
+    log_gaze(student_id, "user_click", {"match": Log[student_id]['rec_lists'], "student_id": student_id}, "diversity",
              request.form['gazedata'])
 
-    return render_template('08_user_click.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['match'],
+    return render_template('08_user_click.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['rec_lists'],
                            student_id=student_id)
 
 
@@ -245,23 +226,23 @@ def list_select():
 
     methods = ['BPRMF', 'UserKNN', 'ItemKNN', 'AdaBPR', 'Borda', 'Random', 'ItemKNN_pro']
     for each_method in methods:
-        for each in Log[student_id][each_method]:
-            Log[student_id][each_method + each['itemID']] = request.form[each_method + each['itemID']]
+        Log[student_id][each_method]["likes"] = {}
+        for each in Log[student_id][each_method]['items']:
+            Log[student_id][each_method]["likes"][each['itemID']] = request.form[each_method + each['itemID']]
 
     log_gaze(student_id, None, None, "user_click", request.form['gazedata'])
 
-    return render_template('09_list_select.html', match=Log[student_id]['match'], student_id=student_id)
+    return render_template('09_list_select.html', match=Log[student_id]['rec_lists'], student_id=student_id)
 
 
 @app.route('/gender survey', methods=['POST'])
 def gender_survey():
     student_id = request.form['student_id']
-    print student_id
     log_time(student_id)  # 9
 
-    Log[student_id]['Mostdiverse'] = request.form['options1']
-    Log[student_id]['Leastdiverse'] = request.form['options2']
-    print Log[student_id]['Mostdiverse'], Log[student_id]['Leastdiverse']
+    Log[student_id]["verification"] = {}
+    Log[student_id]["verification"]['Mostdiverse'] = request.form['options1']
+    Log[student_id]["verification"]['Leastdiverse'] = request.form['options2']
     return render_template('10_gender_survey.html', student_id=student_id)
 
 
@@ -271,11 +252,14 @@ def final():
     log_time(student_id)  # 10
 
     try:
-        Log[student_id]['gender'] = request.form['options1']
-        Log[student_id]['shopping_time'] = request.form['options2']
-        # Log[student_id]['shopping_intent_re'] = request.form['options3']
-        # Log[student_id]['description'] = request.form['text_square']
-        print Log[student_id]['gender'], Log[student_id]['shopping_time'], Log[student_id]['studentID']
+        Log[student_id]['user_info']['gender'] = request.form['options1']
+        Log[student_id]['user_info']['shopping_time'] = request.form['options2']
+
+        print "------------ Finish Notification ------------ \n"
+        print "StudentID: ", Log[student_id]['studentID']
+        print "Gender:    ", Log[student_id]['user_info']['gender']
+        print "Number:    ", log_data.find().count()
+
         log_data.insert(Log[student_id])
         del Log[student_id]
     except:
@@ -293,8 +277,6 @@ def show_gaze():
 def show_gaze_page():
     student_id = request.form['student_id']
     page = request.form['page']
-    print student_id, page
-
     tlog = log_data.find({"studentID": student_id})
     if tlog:
         tlog = tlog[0]

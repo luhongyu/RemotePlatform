@@ -88,7 +88,12 @@
 
     };
     function post2next() {
-        reg.submit()
+        var mymessage=confirm("接下来会进行眼动模块的校准过程,请点击画面中出现的黑色圆点(共9个)\n");
+        if(mymessage==true)
+        {
+            reg.submit()
+
+        }
     }
 </script>
 </body>

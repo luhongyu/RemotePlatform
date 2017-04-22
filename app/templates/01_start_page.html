@@ -33,7 +33,7 @@
                 <h3 class="panel-title"><b>首先请填写您的学号</b></h3>
             </div>
             <div class="panel-body" align="center">
-                <p><input type="text" maxLength="10" name="student_id" placeholder="Student ID here..." /></p>
+                <p><input type="text" maxLength="10" name="student_id" placeholder="Student ID here..."/></p>
             </div>
         </div>
 
@@ -65,7 +65,7 @@
                     其他(请您自己描述)
                 </label></div>
                 <p><textarea class="form-control" rows="1" id="desc" name="reason" style="width:300px"
-                                                              disabled="disabled" title=""></textarea></p>
+                             disabled="disabled" title=""></textarea></p>
             </div>
         </div>
 
@@ -105,7 +105,13 @@
             alert("请用一句话描述您设想的购物场景");
         }
         else {
-            reg.submit()
+
+            var mymessage=confirm("接下来会进行摄像头模块的校准过程,请调整坐姿使头部识别正确\n");
+            if(mymessage==true)
+            {
+                reg.submit()
+
+            }
         }
     }
 </script>

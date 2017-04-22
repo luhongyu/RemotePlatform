@@ -1,7 +1,7 @@
 {% extends basehtml %}
 
 {% block head %}
-{{ super() }}
+    {{ super() }}
     <title>be cool</title>
     <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
     <link href="http://libs.baidu.com/bootstrap/3.0.3/css/bootstrap.min.css" rel="stylesheet">
@@ -12,51 +12,53 @@
 {% endblock %}
 
 {% block body %}
-<form action="/second rating" method="post" id="logdata">
-    <input name="student_id" type="hidden" value={{ student_id }}>
-    <input name="gazedata" type="hidden" id="gdinput" value=""/>
+    <form action="/second rating" method="post" id="logdata">
+        <input name="student_id" type="hidden" value={{ student_id }}>
+        <input name="gazedata" type="hidden" id="gdinput" value=""/>
 
-    <div class="container">
-        <div class="panel panel-primary">
-            <div class="panel-heading">
-                <h3 class="panel-title">
-                    请根据您的喜好程度对以下10个商品进行打分<br>
-                    一颗星表示<b>完全不感兴趣/不了解</b>,五颗星表示<b>非常喜欢/感兴趣</b><br>
-                    请对<b>每个商品</b>都进行打分
-                </h3>
+        <div class="container">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h3 class="panel-title">
+                        请根据您的喜好程度对以下10个商品进行打分<br>
+                        一颗星表示<b>完全不感兴趣/不了解</b>,五颗星表示<b>非常喜欢/感兴趣</b><br>
+                        请对<b>每个商品</b>都进行打分
+                    </h3>
+                </div>
             </div>
-        </div>
 
-        <div class="panel panel-info">
+            <div class="panel panel-info">
 
-            <div class="panel-body">
+                <div class="panel-body">
 
-                {% for tmplist in match %}
-                    <div class="row">
-                        <div class="col-xs-1"></div>
-                        {% for each in tmplist %}
-                            <div class="col-xs-2">
-                                <div class="thumbnail" data-toggle="tooltip" data-placement="top"
-                                     title="{{ each.name }}">
-                                    <a href="{{ each.itemUrl }}" target="_blank"><img src="{{ each.imgUrl }}"></a>
-                                    <div class="caption">
-                                        <p style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{{ each.name }}</p>
-                                        <input name={{ each.itemID }} type="number" class="rating" min=0 max=5 step=1
-                                               data-size="xs" value="0">
+                    {% for tmplist in match %}
+                        <div class="row">
+                            <div class="col-xs-1"></div>
+                            {% for each in tmplist %}
+                                <div class="col-xs-2">
+                                    <div class="thumbnail" data-toggle="tooltip" data-placement="top"
+                                         title="{{ each.name }}">
+                                        <a href="{{ each.itemUrl }}" target="_blank"><img src="{{ each.imgUrl }}"></a>
+                                        <div class="caption">
+                                            <p style="overflow: hidden;white-space: nowrap;text-overflow: ellipsis;">{{ each.name }}</p>
+                                            <input name={{ each.itemID }} type="number" class="rating" min=0 max=5
+                                                   step=1
+                                                   data-size="xs" value="0">
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        {% endfor %}
-                    </div>
-                {% endfor %}
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
 
+                </div>
+            </div>
+            <div style="margin:auto;width:200px">
+                <p><input class="btn btn-primary" type="button" onclick="post2back()" style="width:200px" value="下一步">
+                </p>
             </div>
         </div>
-        <div style="margin:auto;width:200px">
-            <p><input class="btn btn-primary" type="button" onclick="post2back()" style="width:200px" value="下一步"></p>
-        </div>
-    </div>
-</form>
+    </form>
 {% endblock %}
 
 
