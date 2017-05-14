@@ -20,6 +20,7 @@ def Random():
 
 
 def BPRMF(user_rating_list):
+
     return Random()
 
 

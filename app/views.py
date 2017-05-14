@@ -2,11 +2,12 @@
 import time
 from flask import render_template, request
 from app import app
+import pandas as pd
 
 from algorithm import *
 import json
 
-DEBUG = False
+DEBUG = True
 Log = {}
 
 
@@ -16,16 +17,17 @@ def __init_log(student_id):
     """
     Log[student_id] = {}
     Log[student_id]['studentID'] = student_id
-    Log[student_id]['timestamps'] = []
+    Log[student_id]['timestamps'] = {}
     Log[student_id]['Gaze'] = {}
+    Log[student_id]['click'] = {}
+    Log[student_id]['user_info'] = {}
 
 
-def log_time(student_id):
+def log_time(student_id, pagebegin):
     """
         log current_time to student_id
     """
-    tmpTime = time.strftime('%Y-%m-%d %X', time.localtime())
-    Log[student_id]['timestamps'].append(tmpTime)
+    Log[student_id]['timestamps'][pagebegin] = time.time()
 
 
 def log_gaze(student_id, nowpage, np_param, lastpage, gazedata):
@@ -38,6 +40,13 @@ def log_gaze(student_id, nowpage, np_param, lastpage, gazedata):
 
     if nowpage:
         Log[student_id]['Gaze'][nowpage] = {"param": np_param, "gazedata": {}}
+
+
+def log_click(student_id, lastpage, clickdata):
+    if clickdata:
+        Log[student_id]["click"][lastpage] = json.loads(clickdata)
+    else:
+        Log[student_id]["click"][lastpage] = []
 
 
 @app.route('/')
@@ -60,14 +69,13 @@ def cam_cal():
     student_id = request.form['student_id']
     __init_log(student_id)
 
-    Log[student_id]['user_info'] = {}
     Log[student_id]['user_info']['shopping_intent'] = request.form['shopping_intent']
     if Log[student_id]['user_info']['shopping_intent'] == "4":
         Log[student_id]['user_info']['reason'] = request.form['reason']
     else:
         Log[student_id]['user_info']['reason'] = ""
 
-    log_time(student_id)  # 1
+    log_time(student_id, "cam_cal")  # 1
     return render_template('02_cam_calibration.html', student_id=student_id)
 
 
@@ -77,7 +85,7 @@ def gaze_cal():
     摄像头校准页面(cam_cal) -> *眼动校准页面(gaze_cal) -> 采集评分页面（welcome）
     """
     student_id = request.form['student_id']
-    log_time(student_id)  # 2
+    log_time(student_id, "gaze_cal")  # 2
     return render_template('03_gaze_calibration.html', student_id=student_id)
 
 
@@ -90,7 +98,6 @@ def user_rating():
     student_id = request.form['student_id']
     if DEBUG:
         __init_log(student_id)
-    log_time(student_id)  # 3
 
     Log[student_id]['Temp_ids'] = random.sample(id_list, 20)
     Log[student_id]['user_rating_list'] = dict([(tid, 0) for tid in Log[student_id]['Temp_ids']])
@@ -99,7 +106,10 @@ def user_rating():
              [products.find_one({'itemID': tid}) for tid in Log[student_id]['Temp_ids'][5:10]]]
 
     log_gaze(student_id, "user_rating_1", {"match": match, "student_id": student_id}, None, None)
-    return render_template('04_user_rating_1.html', basehtml="GAZE_MODULE.html", match=match, student_id=student_id)
+
+    log_time(student_id, "user_rating_1")  # 3
+    return render_template('04_user_rating_1.html', basehtml="GAZE_MODULE_Tobii.html", match=match,
+                           student_id=student_id)
 
 
 @app.route('/second rating', methods=['POST'])
@@ -108,7 +118,7 @@ def second_rating():
     商品评分收集页面1 -> *商品评分收集页面2 -> 列表评分页面(list_rating)
     """
     student_id = request.form['student_id']
-    log_time(student_id)  # 4
+    log_click(student_id, "user_rating_1", request.form['clickdata'])
 
     for item_id in Log[student_id]['user_rating_list'].keys():
         try:
@@ -124,17 +134,20 @@ def second_rating():
 
     log_gaze(student_id, "user_rating_2", {"match": match, "student_id": student_id}, "user_rating_1",
              request.form['gazedata'])
-    return render_template('05_user_rating_2.html', basehtml="GAZE_MODULE.html", match=match, student_id=student_id)
+
+    log_time(student_id, "user_rating_2")  # 4
+    return render_template('05_user_rating_2.html', basehtml="GAZE_MODULE_Tobii.html", match=match,
+                           student_id=student_id)
 
 
-@app.route('/list rating', methods=['POST'])
+@app.route('/list rating', methods=['POST', 'GET'])
 def list_rating():
     """
     商品评分收集页面2 -> *推荐列表评分 -> 推荐列表多样性评分
     """
 
     student_id = request.form['student_id']
-    log_time(student_id)  # 5
+    log_click(student_id, "user_rating_2", request.form['clickdata'])
 
     for item_id in Log[student_id]['user_rating_list'].keys():
         try:
@@ -168,7 +181,9 @@ def list_rating():
     log_gaze(student_id, "recommendations", {"match": Log[student_id]['rec_lists'], "student_id": student_id},
              "user_rating_2", request.form['gazedata'])
 
-    return render_template('06_recommendations.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['rec_lists'],
+    log_time(student_id, "recommendations")  # 5
+    return render_template('06_recommendations.html', basehtml="GAZE_MODULE.html",
+                           match=Log[student_id]['rec_lists'],
                            student_id=student_id)
 
 
@@ -178,7 +193,7 @@ def list_diversity():
     推荐列表评分 -> *推荐列表多样性评分 -> 商品喜好标注页面
     """
     student_id = request.form['student_id']
-    log_time(student_id)  # 6
+    log_click(student_id, "recommendations", request.form['clickdata'])
 
     Log[student_id]['BPRMF']['rating'] = request.form['BPRMF']
     Log[student_id]['UserKNN']['rating'] = request.form['UserKNN']
@@ -191,7 +206,9 @@ def list_diversity():
     log_gaze(student_id, "diversity", {"match": Log[student_id]['rec_lists'], "student_id": student_id},
              "recommendations",
              request.form['gazedata'])
-    return render_template('07_diversity.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['rec_lists'],
+
+    log_time(student_id, "diversity")  # 6
+    return render_template('07_diversity.html', basehtml="GAZE_MODULE_Tobii.html", match=Log[student_id]['rec_lists'],
                            student_id=student_id)
 
 
@@ -201,7 +218,7 @@ def user_click():
     推荐列表多样性评分 -> *商品喜好标注页面 -> 列表选择页面
     """
     student_id = request.form['student_id']
-    log_time(student_id)  # 7
+    log_click(student_id, "diversity", request.form['clickdata'])
 
     Log[student_id]['BPRMF']['diversity'] = request.form['BPRMF']
     Log[student_id]['UserKNN']['diversity'] = request.form['UserKNN']
@@ -214,7 +231,8 @@ def user_click():
     log_gaze(student_id, "user_click", {"match": Log[student_id]['rec_lists'], "student_id": student_id}, "diversity",
              request.form['gazedata'])
 
-    return render_template('08_user_click.html', basehtml="GAZE_MODULE.html", match=Log[student_id]['rec_lists'],
+    log_time(student_id, "user_click")  # 7
+    return render_template('08_user_click.html', basehtml="GAZE_MODULE_Tobii.html", match=Log[student_id]['rec_lists'],
                            student_id=student_id)
 
 
@@ -222,7 +240,7 @@ def user_click():
 @app.route('/like dislike', methods=['POST'])
 def list_select():
     student_id = request.form['student_id']
-    log_time(student_id)  # 8
+    log_click(student_id, "user_click", request.form['clickdata'])
 
     methods = ['BPRMF', 'UserKNN', 'ItemKNN', 'AdaBPR', 'Borda', 'Random', 'ItemKNN_pro']
     for each_method in methods:
@@ -232,38 +250,38 @@ def list_select():
 
     log_gaze(student_id, None, None, "user_click", request.form['gazedata'])
 
+    log_time(student_id, "list_select")  # 8
     return render_template('09_list_select.html', match=Log[student_id]['rec_lists'], student_id=student_id)
 
 
 @app.route('/gender survey', methods=['POST'])
 def gender_survey():
     student_id = request.form['student_id']
-    log_time(student_id)  # 9
 
     Log[student_id]["verification"] = {}
     Log[student_id]["verification"]['Mostdiverse'] = request.form['options1']
     Log[student_id]["verification"]['Leastdiverse'] = request.form['options2']
+
+    log_time(student_id, "gender_survey")  # 9
     return render_template('10_gender_survey.html', student_id=student_id)
 
 
 @app.route('/finish', methods=['POST'])
 def final():
     student_id = request.form['student_id']
-    log_time(student_id)  # 10
+    log_time(student_id, "final")  # 10
 
-    try:
-        Log[student_id]['user_info']['gender'] = request.form['options1']
-        Log[student_id]['user_info']['shopping_time'] = request.form['options2']
+    Log[student_id]['user_info']['gender'] = request.form['options1']
+    Log[student_id]['user_info']['shopping_time'] = request.form['options2']
 
-        print "------------ Finish Notification ------------ \n"
-        print "StudentID: ", Log[student_id]['studentID']
-        print "Gender:    ", Log[student_id]['user_info']['gender']
-        print "Number:    ", log_data.find().count()
+    print "------------ Finish Notification ------------ "
+    print "StudentID: ", Log[student_id]['studentID']
+    print "Gender:    ", Log[student_id]['user_info']['gender']
+    print "Number:    ", log_data.find().count()
 
-        log_data.insert(Log[student_id])
-        del Log[student_id]
-    except:
-        pass
+    log_data.insert(Log[student_id])
+    del Log[student_id]
+
     return render_template('11_final.html', image={
         "url": "https://ss1.bdstatic.com/70cFvXSh_Q1YnxGkpoWK1HF6hhy/it/u=586527107,661330562&fm=23&gp=0.jpg"})
 
@@ -277,6 +295,7 @@ def show_gaze():
 def show_gaze_page():
     student_id = request.form['student_id']
     page = request.form['page']
+    mode = request.form['mode']
     tlog = log_data.find({"studentID": student_id})
     if tlog:
         tlog = tlog[0]
@@ -286,10 +305,47 @@ def show_gaze_page():
     param = tlog['Gaze'][page]['param']
     gaze_data = tlog['Gaze'][page]['gazedata']
 
-    offset_top = gaze_data['pagesize']['offsetTop']
-    offset_left = gaze_data['pagesize']['offsetLeft']
-    gaze_list = [{"x": t['px'] - offset_left, "y": t['py'] - offset_top, "value": 1} for t in gaze_data['gazelist']]
+    scale_width = float(gaze_data['pagesize']['width'])
+    scale_height = float(gaze_data['pagesize']['height'])
 
+    print mode
+    gaze_list = []
+    if mode == "tobii":
+        def getscroll(t_time):
+            last_scroll = (0, 0)
+            for trec in gaze_data['scrollrecs']:
+                if t_time >= trec['timestamp']:
+                    last_scroll = (trec['scrollTop'], trec['scrollLeft'])
+                    continue
+                else:
+                    break
+            return last_scroll[0], last_scroll[1]
+
+        df_fixation = pd.read_pickle("tobii_0507_fixation.pkl")
+
+        mintime, maxtime = gaze_data['gazelist'][0]['time'], gaze_data['gazelist'][-1]['time']
+
+        offset_top = gaze_data['windowrange']['offsettop']
+        offset_left = gaze_data['windowrange']['offsetleft']
+
+        for screenx, screeny, timestamp in zip(df_fixation['screen_x'], df_fixation['screen_y'],
+                                               df_fixation['timestamp']):
+            if mintime <= timestamp <= maxtime:
+                scrolltop, scrollleft = getscroll(timestamp)
+                x = screenx - offset_left + scrollleft
+                y = screeny - offset_top + scrolltop
+                gaze_list.append({"x": x / scale_width, "y": y / scale_height, "value": 1})
+
+    else:
+
+        offset_top = gaze_data['pagesize']['offsetTop']
+        offset_left = gaze_data['pagesize']['offsetLeft']
+
+        gaze_list = [
+            {"x": (tg['px'] - offset_left) / scale_width, "y": (tg['py'] - offset_top) / scale_height, "value": 1}
+            for tg in gaze_data['gazelist']]
+
+    print gaze_list
     page_dic = {
         'user_rating_1': "04_user_rating_1.html",
         'user_rating_2': "05_user_rating_2.html",

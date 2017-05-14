@@ -19,6 +19,8 @@
 </head>
 <body background="http://fmn.rrfmn.com/fmn078/20160423/2015/large_5kqd_4c92000609851e7f.jpg">
 <script src="../static/js/searchgazer.js" type="text/javascript"></script>
+<script src="../static/js/getposition.js" type="text/javascript"></script>
+
 <script>$(function () {
     $("[data-toggle='tooltip']").tooltip();
 });</script>
@@ -31,6 +33,16 @@
 <script>
     var gaze_list = [];
     var item_click_recs = [];
+    var scroll_recs = [];
+
+    // if(document.addEventListener){
+    //    document.addEventListener('DOMMouseScroll',scrollFunc,false);
+    //}//W3C
+    //window.onmousewheel=document.onmousewheel=scrollFunc;
+
+    //function scrollFunc() {
+    //    scroll_recs.push({"scrollTop": $(window).scrollTop(), "scrollLeft": $(window).scrollLeft(), 'timestamp': nowtime()})
+    //}
 
     window.onload = function () {
         webgazer.setRegression('ridge') /* currently must set regression and tracker */
@@ -41,7 +53,10 @@
                         data = bound(data);
                         var px = data.x + $(window).scrollLeft();
                         var py = data.y + $(window).scrollTop();
-                        gaze_list.push({"px": px, "py": py, "time": parseInt(clock)});
+                        var now = nowtime();
+                        gaze_list.push({"px": px, "py": py, "time": now});
+
+                        scroll_recs.push({"scrollTop": $(window).scrollTop(), "scrollLeft": $(window).scrollLeft(), 'timestamp': now})
                     }
                 })
                 .begin()
@@ -95,6 +110,17 @@
     function post2back() {
         var gazedata;
         var loggaze = $("#loggaze");
+        var thum_positions = [];
+
+        $(".thumbnail").each(function (index,domEle) {
+            thum_positions.push({
+                "top": getAbsoluteTop(domEle),
+                "left": getAbsoluteLeft(domEle),
+                "width": getElementWidth(domEle),
+                "height": getElemenHeight(domEle)
+            })
+        });
+
         gazedata = {
             "pagesize": {
                 "width": loggaze.width(),
@@ -102,7 +128,13 @@
                 "offsetTop": loggaze.offset().top,
                 "offsetLeft": loggaze.offset().left
             },
-            "gazelist": gaze_list
+            "windowrange": {
+                "offsetleft": window.screenLeft,
+                "offsettop": window.screenTop + (window.outerHeight - window.innerHeight)
+            },
+            "thum_positions": thum_positions,
+            "gazelist": gaze_list,
+            "scrollrecs": scroll_recs
         };
         document.getElementById("gdinput").value = JSON.stringify(gazedata);
         document.getElementById("ckinput").value = JSON.stringify(item_click_recs);
@@ -113,6 +145,10 @@
         var item_id = e.getAttribute("name");
         item_click_recs.push(item_id);
     }
+    function nowtime() {
+        return (new Date()).valueOf();
+    }
+
 </script>
 
 </body>

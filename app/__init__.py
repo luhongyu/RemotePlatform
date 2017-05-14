@@ -9,3 +9,6 @@ app = Flask(__name__)
 # app.register_blueprint(member, subdomain='static')
 
 import views
+
+# from flask_sslify import SSLify
+# sslify = SSLify(app)

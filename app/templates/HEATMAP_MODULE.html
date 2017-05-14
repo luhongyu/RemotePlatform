@@ -29,16 +29,25 @@
     {% endblock %}
 </div>
 <script>
+    var gaze_data = {{ gazelist|safe|escape }};
     window.onload = function () {
-        var gaze_data = {{ gazelist|safe|escape }};
         var hm = $("#heatmap");
+
+        var scale_width = hm.width();
+        var scale_height = hm.height();
 
         var heatmapInstance = h337.create({
             container: document.querySelector('#heatmap'),
             width: hm.width(),
             height: hm.height()
         });
-        var max = 10;
+        var max = 5;
+        for(var i=0;i<gaze_data.length;i++){
+            gaze_data[i]['x'] = parseInt(gaze_data[i]['x'] * scale_width);
+            gaze_data[i]['y'] = parseInt(gaze_data[i]['y'] * scale_height);
+
+            // heatmapInstance.addData(gaze_data[i])
+        }
         var data = {
             max: max,
             data: gaze_data
